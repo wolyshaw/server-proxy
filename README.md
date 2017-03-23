@@ -14,5 +14,5 @@ app.use(setProxy)
 app.get('*', (req, res) => {
 	res.send('server')
 })
-app.listener(prot, err => console.log(err))
+app.listen(prot, err => err ? console.log(err) : console.log(`server online in ${post}`))
 ```
