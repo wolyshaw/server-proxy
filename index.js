@@ -1,28 +1,45 @@
+const url = require('url')
 const http = require('http')
+const https = require('https')
 
 const proxy = config => {
+	let urlParse = url.parse(config.hostname),
+		isHttp = urlParse.protocol === 'http:'
+
 	return (req, res, next) => {
-		let opt, _req
+		let option, server
 
-		opt = {
-				host: config.hostname,
-				path: req.url,
-				method: req.method
-			}
+		option = {
+			host: urlParse.hostname,
+			port: (isHttp ? 80 : 443),
+			path: req.url,
+			method: req.method,
+			params: req.params,
+			body: req.text
+		}
 
-		_req = http.request(opt, _res => {
-			if (_res.statusCode === 200) {
-				console.log(`remote: http status code is  ${_res.statusCode} url is ${req.url}`)
-				_res.pipe(res, 'utf-8')
+		server = (isHttp ? http : https).request(option, response => {
+			if (response.statusCode === 200) {
+				const cookie = response.headers['set-cookie']
+				if (cookie instanceof Array) {
+					cookie.map((item, index) => cookie[index] = item.replace(/; domain=[^;]+/, ''))
+				}
+				delete response.headers['access-control-allow-origin']
+				console.log(`[remote] statusCode: ${response.statusCode} url: ${req.url}`)
+				response.pipe(res, 'utf-8')
 			}else{
-				console.log(`local: http status code is  ${_res.statusCode} url is ${req.url}`)
+				console.log(`[local] statusCode: ${response.statusCode} url: ${req.url}`)
 				next()
 			}
 		})
 
-		_req
-			.on('error', err => console.log(err))
-			.end()
+		server
+			.on('error', err => {
+				console.log(err)
+				server.end()
+			})
+
+		req.pipe(server)
 	}
 }
 

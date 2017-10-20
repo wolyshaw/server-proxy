@@ -1,6 +1,6 @@
 {
 	"name": "server-proxy",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "a server proxy",
 	"main": "index.js",
 	"repository": {
@@ -17,6 +17,8 @@
 	},
 	"homepage": "https://github.com/wolyshaw/server-proxy#readme",
 	"dependencies": {
-		"http": "0.0.0"
+		"http": "0.0.0",
+		"https": "^1.0.0",
+		"url": "^0.11.0"
 	}
 }
